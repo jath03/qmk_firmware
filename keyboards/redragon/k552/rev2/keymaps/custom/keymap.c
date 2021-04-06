@@ -26,7 +26,8 @@ enum layer_names {
 };
 
 enum my_keycodes {
-    IND_MOD = SAFE_RANGE // Toggles between indicator modes
+    IND_MOD = SAFE_RANGE, // Toggles between indicator modes
+    WLK_AWY //
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -45,7 +46,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 _______,    _______,       _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,    _______,     IND_MOD,     RGB_HUD,     RGB_SAD,    RGB_VAD,
                 _______,    _______,       _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,                 _______,
                 _______,                   _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,                 _______,                  KC_VOLU,
-                _______,    _______,       _______,                                             KC_MPLY,                                                _______,     _______,    _______,     _______,     KC_MPRV,     KC_VOLD,    KC_MNXT
+                _______,    _______,       _______,                                             KC_MPLY,                                                _______,     _______,    _______,     WLK_AWY,     KC_MPRV,     KC_VOLD,    KC_MNXT
                 )
 };
 
@@ -72,13 +73,22 @@ void rgb_matrix_indicators_user(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case IND_MOD:
-      if (record->event.pressed) {
-        inc_matrix_mode = !inc_matrix_mode;
-      }
-      return false;
-      break;
-  }
-  return true;
+    switch (keycode) {
+        case IND_MOD:
+            if (record->event.pressed) {
+                inc_matrix_mode = !inc_matrix_mode;
+            }
+            return false;
+            break;
+        case WLK_AWY:
+            if (record->event.pressed) {
+                tap_code(KC_MSTP);
+                register_code(KC_LGUI);
+                tap_code(KC_L);
+                unregister_code(KC_LGUI);
+            }
+            return false;
+            break;
+    }
+    return true;
 }
