@@ -63,8 +63,8 @@ void rgb_matrix_indicators_user(void) {
     if (inc_matrix_mode) {
         if (caps) {
             HSV h = rgb_matrix_get_hsv();
-            h.v = 100;
-            h.s = 100;
+            h.v = RGB_MATRIX_MAXIMUM_BRIGHTNESS;
+            h.s = UINT8_MAX;
             RGB color = hsv_to_rgb(h);
             rgb_matrix_set_color(51, color.r, color.g, color.b);
         } else {
