@@ -64,6 +64,7 @@ void rgb_matrix_indicators_user(void) {
         if (caps) {
             HSV h = rgb_matrix_get_hsv();
             h.v = 100;
+            h.s = 100;
             RGB color = hsv_to_rgb(h);
             rgb_matrix_set_color(51, color.r, color.g, color.b);
         } else {
