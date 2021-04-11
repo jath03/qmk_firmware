@@ -1,4 +1,4 @@
-/* Copyright 2020 Adam Honse <calcprogrammer1@gmail.com>
+                            /* Copyright 2020 Adam Honse <calcprogrammer1@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,3 +42,10 @@
 #define RGB_MATRIX_KEYPRESSES
 #define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_SOLID_SPLASH
 #define RGB_MATRIX_STARTUP_HUE 120
+
+#define RGB_DI_PIN D5
+#define RGBLED_NUM 8
+#define NOP_FUDGE .4
+#define RGBW
+#define WS2812_BYTE_ORDER 0
+// #define WS2812_EXTERNAL_PULLUP
