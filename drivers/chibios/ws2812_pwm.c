@@ -4,8 +4,10 @@
 
 /* Adapted from https://github.com/joewa/WS2812-LED-Driver_ChibiOS/ */
 
-#ifdef RGBW
-#    error "RGBW not supported"
+#ifndef RGBW
+#    define WS2812_COLOR_N 3
+#else
+#    define WS2812_COLOR_N 4
 #endif
 
 #ifndef WS2812_PWM_DRIVER
@@ -26,6 +28,7 @@
 #if (STM32_DMA_SUPPORTS_DMAMUX == TRUE) && !defined(WS2812_DMAMUX_ID)
 #    error "please consult your MCU's datasheet and specify in your config.h: #define WS2812_DMAMUX_ID STM32_DMAMUX1_TIM?_UP"
 #endif
+
 
 // Push Pull or Open Drain Configuration
 // Default Push Pull
@@ -59,8 +62,9 @@
  * The reset period for each frame is defined in WS2812_TRST_US.
  * Calculate the number of zeroes to add at the end assuming 1.25 uS/bit:
  */
+#define WS2812_COLOR_BITS (WS2812_COLOR_N*8)
 #define WS2812_RESET_BIT_N (1000 * WS2812_TRST_US / 1250)
-#define WS2812_COLOR_BIT_N (RGBLED_NUM * 24)                   /**< Number of data bits */
+#define WS2812_COLOR_BIT_N (RGBLED_NUM * WS2812_COLOR_BITS)    /**< Number of data bits */
 #define WS2812_BIT_N (WS2812_COLOR_BIT_N + WS2812_RESET_BIT_N) /**< Total number of bits in a frame */
 
 /**
@@ -105,7 +109,7 @@
  *
  * @return                          The bit index
  */
-#define WS2812_BIT(led, byte, bit) (24 * (led) + 8 * (byte) + (7 - (bit)))
+#define WS2812_BIT(led, byte, bit) (WS2812_COLOR_BITS * (led) + 8 * (byte) + (7 - (bit)))
 
 #if (WS2812_BYTE_ORDER == WS2812_BYTE_ORDER_GRB)
 /**
@@ -219,6 +223,21 @@
 #    define WS2812_BLUE_BIT(led, bit) WS2812_BIT((led), 0, (bit))
 #endif
 
+#ifdef RGBW
+/**
+ * @brief   Determine the index in @ref ws2812_frame_buffer "the frame buffer" of a given white bit
+ *
+ * @note    The white byte is the last byte in the color packet
+ *
+ * @param[in] led:                  The led index [0, @ref WS2812_LED_N)
+ * @param[in] bit:                  The bit index [0, 7]
+ *
+ * @return                          The bit index
+ */
+#    define WS2812_WHITE_BIT(led, bit)           WS2812_BIT((led), 3, (bit))
+#endif
+
+
 /* --- PRIVATE VARIABLES ---------------------------------------------------- */
 
 static uint32_t ws2812_frame_buffer[WS2812_BIT_N + 1]; /**< Buffer for a frame */
@@ -278,7 +297,7 @@ void ws2812_init(void) {
     pwmStart(&WS2812_PWM_DRIVER, &ws2812_pwm_config);
     pwmEnableChannel(&WS2812_PWM_DRIVER, WS2812_PWM_CHANNEL - 1, 0);  // Initial period is 0; output will be low until first duty cycle is DMA'd in
 }
-
+#ifndef RGBW
 void ws2812_write_led(uint16_t led_number, uint8_t r, uint8_t g, uint8_t b) {
     // Write color to frame buffer
     for (uint8_t bit = 0; bit < 8; bit++) {
@@ -287,6 +306,18 @@ void ws2812_write_led(uint16_t led_number, uint8_t r, uint8_t g, uint8_t b) {
         ws2812_frame_buffer[WS2812_BLUE_BIT(led_number, bit)]  = ((b >> bit) & 0x01) ? WS2812_DUTYCYCLE_1 : WS2812_DUTYCYCLE_0;
     }
 }
+#else
+
+void ws2812_write_led_rgbw(uint32_t led_number, uint8_t r, uint8_t g, uint8_t b, uint8_t w)
+{
+    for (uint32_t bit = 0; bit < 8; bit++) {
+        ws2812_frame_buffer[WS2812_RED_BIT(led_number, bit)]      = ((r >> bit) & 0x01) ? WS2812_DUTYCYCLE_1 : WS2812_DUTYCYCLE_0;
+        ws2812_frame_buffer[WS2812_GREEN_BIT(led_number, bit)]    = ((g >> bit) & 0x01) ? WS2812_DUTYCYCLE_1 : WS2812_DUTYCYCLE_0;
+        ws2812_frame_buffer[WS2812_BLUE_BIT(led_number, bit)]     = ((b >> bit) & 0x01) ? WS2812_DUTYCYCLE_1 : WS2812_DUTYCYCLE_0;
+        ws2812_frame_buffer[WS2812_WHITE_BIT(led_number, bit)]    = ((w >> bit) & 0x01) ? WS2812_DUTYCYCLE_1 : WS2812_DUTYCYCLE_0;
+    }
+}
+#endif
 
 // Setleds for standard RGB
 void ws2812_setleds(LED_TYPE* ledarray, uint16_t leds) {
@@ -297,6 +328,10 @@ void ws2812_setleds(LED_TYPE* ledarray, uint16_t leds) {
     }
 
     for (uint16_t i = 0; i < leds; i++) {
+#ifndef RGBW
         ws2812_write_led(i, ledarray[i].r, ledarray[i].g, ledarray[i].b);
+#else
+        ws2812_write_led_rgbw(i, ledarray[i].r, ledarray[i].g, ledarray[i].b, ledarray[i].w);
+#endif
     }
 }
