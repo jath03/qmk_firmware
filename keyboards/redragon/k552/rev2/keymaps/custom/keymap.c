@@ -32,8 +32,9 @@ enum layer_names {
 };
 
 enum my_keycodes {
-    IND_MOD = SAFE_RANGE, // Toggles between indicator modes
-    WLK_AWY //
+    IND_MOD = SAFE_RANGE,   // Toggles between indicator modes
+    WLK_AWY,                //
+    LGO_MOD                 // Rotates through logo display modes
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -50,7 +51,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 _______,                   _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,    _______,     _______,     RGB_RMOD,    RGB_MOD,    _______,
                 _______,    _______,       _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,    _______,       RESET,     RGB_HUI,     RGB_SAI,    RGB_VAI,
                 _______,    _______,       _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,    _______,     IND_MOD,     RGB_HUD,     RGB_SAD,    RGB_VAD,
-                _______,    _______,       _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,                 _______,
+                _______,    _______,       _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,                 LGO_MOD,
                 _______,                   _______,       _______,   _______,       _______,    _______,   _______,       _______,       _______,       _______,     _______,                 _______,                  KC_VOLU,
                 _______,    _______,       _______,                                             KC_MPLY,                                                _______,     _______,    _______,     WLK_AWY,     KC_MPRV,     KC_VOLD,    KC_MNXT
                 )
@@ -59,23 +60,48 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 bool inc_matrix_mode = false;
 bool caps = false;
+int strip = 0; // 0 = normal part of matrix; 1 = solid color of matrix; 2 = solid white; 3 = off
 
 bool led_update_user(led_t led_state) {
     caps = led_state.caps_lock;
     return !inc_matrix_mode;
 }
 
+void rgb_matrix_set_strip(uint8_t red, uint8_t green, uint8_t blue) {
+    rgb_matrix_set_color(65, red, green, blue);
+    rgb_matrix_set_color(66, red, green, blue);
+    rgb_matrix_set_color(67, red, green, blue);
+    rgb_matrix_set_color(94, red, green, blue);
+    rgb_matrix_set_color(95, red, green, blue);
+    rgb_matrix_set_color(96, red, green, blue);
+    rgb_matrix_set_color(97, red, green, blue);
+    rgb_matrix_set_color(98, red, green, blue);
+}
+
 void rgb_matrix_indicators_user(void) {
+    HSV h = rgb_matrix_get_hsv();
+    h.v = RGB_MATRIX_MAXIMUM_BRIGHTNESS;
+    h.s = UINT8_MAX;
+    RGB color = hsv_to_rgb(h);
     if (inc_matrix_mode) {
         if (caps) {
-            HSV h = rgb_matrix_get_hsv();
-            h.v = RGB_MATRIX_MAXIMUM_BRIGHTNESS;
-            h.s = UINT8_MAX;
-            RGB color = hsv_to_rgb(h);
             rgb_matrix_set_color(51, color.r, color.g, color.b);
         } else {
             rgb_matrix_set_color(51, 0, 0, 0);
         }
+    }
+    switch (strip) {
+        case 0:
+            break;
+        case 1:
+            rgb_matrix_set_strip(color.r, color.g, color.b);
+            break;
+        case 2:
+            rgb_matrix_set_strip(255, 255, 255);
+            break;
+        case 3:
+            rgb_matrix_set_strip(0, 0, 0);
+            break;
     }
 }
 
@@ -96,6 +122,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
             break;
+        case LGO_MOD:
+            if (record->event.pressed) {
+                if (strip < 3) strip++;
+                else strip = 0;
+            }
     }
     return true;
 }
