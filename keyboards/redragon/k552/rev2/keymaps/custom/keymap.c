@@ -68,13 +68,13 @@ bool led_update_user(led_t led_state) {
 void rgb_matrix_indicators_user(void) {
     if (inc_matrix_mode) {
         if (caps) {
-            // HSV h = rgb_matrix_get_hsv();
-            // h.v = RGB_MATRIX_MAXIMUM_BRIGHTNESS;
-            // h.s = UINT8_MAX;
-            // RGB color = hsv_to_rgb(h);
-            // rgb_matrix_set_color(51, color.r, color.g, color.b);
+            HSV h = rgb_matrix_get_hsv();
+            h.v = RGB_MATRIX_MAXIMUM_BRIGHTNESS;
+            h.s = UINT8_MAX;
+            RGB color = hsv_to_rgb(h);
+            rgb_matrix_set_color(51, color.r, color.g, color.b);
         } else {
-            // rgb_matrix_set_color(51, 0, 0, 0);
+            rgb_matrix_set_color(51, 0, 0, 0);
         }
     }
 }
