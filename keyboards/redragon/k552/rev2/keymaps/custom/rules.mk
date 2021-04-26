@@ -16,7 +16,7 @@ RGBLIGHT_ENABLE = no
 
 
 
-OPENRGB_ENABLE=no
+OPENRGB_ENABLE=yes
 OPENRGB_USE_CUSTOM_MATRIX_MAP = yes
 
 # Custom RGB matrix handling
