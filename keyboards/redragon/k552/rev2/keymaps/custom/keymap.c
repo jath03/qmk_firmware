@@ -60,11 +60,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 bool inc_matrix_mode = false;
 bool caps = false;
-int strip = 0; // 0 = normal part of matrix; 1 = solid color of matrix; 2 = solid white; 3 = off
+int strip = 0; // 0 = normal part of matrix; 1 = caps indicator; 2 = solid white; 3 = off
 
 bool led_update_user(led_t led_state) {
     caps = led_state.caps_lock;
-    return !inc_matrix_mode;
+    return false;
 }
 
 void rgb_matrix_set_strip(uint8_t red, uint8_t green, uint8_t blue) {
@@ -83,18 +83,16 @@ void rgb_matrix_indicators_user(void) {
     h.v = RGB_MATRIX_MAXIMUM_BRIGHTNESS;
     h.s = UINT8_MAX;
     RGB color = hsv_to_rgb(h);
-    if (inc_matrix_mode) {
-        if (caps) {
-            rgb_matrix_set_color(51, color.r, color.g, color.b);
-        } else {
-            rgb_matrix_set_color(51, 0, 0, 0);
-        }
+    if (inc_matrix_mode && strip != 1) {
+        if (caps) rgb_matrix_set_color(51, color.r, color.g, color.b);
+        else rgb_matrix_set_color(51, 0, 0, 0);
     }
     switch (strip) {
         case 0:
             break;
         case 1:
-            rgb_matrix_set_strip(color.r, color.g, color.b);
+            if (caps) rgb_matrix_set_strip(color.r, color.g, color.b);
+            else rgb_matrix_set_strip(0, 0, 0);
             break;
         case 2:
             rgb_matrix_set_strip(255, 255, 255);
@@ -127,6 +125,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 if (strip < 3) strip++;
                 else strip = 0;
             }
+            return false;
+            break;
     }
     return true;
 }
