@@ -41,26 +41,34 @@
     GPIO    GND
 */
 
-LED_TYPE led_state[DRIVER_LED_TOTAL];
+LED_TYPE led_state[DRIVER_LED_TOTAL- RGBLED_NUM];
 LED_TYPE new_led_state[DRIVER_LED_TOTAL];
 LED_TYPE rgb_matrix_ws2812_array[RGBLED_NUM];
+extern volatile int strip;
 
 void init(void) {}
-
+bool ws_changed = false;
 static void flush(void) {
-    int x = 0;
+
     for (int i=0; i<DRIVER_LED_TOTAL; i++) {
-        if (i == 65 || i == 66 || i == 67 || i == 94 || i == 95 || i == 96 || i == 97 || i == 98) {
-            rgb_matrix_ws2812_array[7 - x] = new_led_state[i];
-            x++;
-#    ifdef RGBW
-            convert_rgb_to_rgbw(&rgb_matrix_ws2812_array[i]);
-#    endif
+        if (i > 101) {
+            convert_rgb_to_rgbw(&new_led_state[i]);
+            if (rgb_matrix_ws2812_array[DRIVER_LED_TOTAL - i - 1].r != new_led_state[i].r
+                || rgb_matrix_ws2812_array[DRIVER_LED_TOTAL - i - 1].g != new_led_state[i].g
+                || rgb_matrix_ws2812_array[DRIVER_LED_TOTAL - i - 1].b != new_led_state[i].b
+                || rgb_matrix_ws2812_array[DRIVER_LED_TOTAL - i - 1].w != new_led_state[i].w)
+            {
+                rgb_matrix_ws2812_array[DRIVER_LED_TOTAL - i - 1] = new_led_state[i];
+                ws_changed = true;
+            }
         } else {
             led_state[i] = new_led_state[i];
         }
     }
-    ws2812_setleds(rgb_matrix_ws2812_array, RGBLED_NUM);
+    if (strip == 0 || ws_changed) {
+        ws2812_setleds(rgb_matrix_ws2812_array, RGBLED_NUM);
+        ws_changed = false;
+    }
 }
 
 void set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
