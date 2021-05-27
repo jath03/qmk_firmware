@@ -199,21 +199,7 @@ void openrgb_get_protocol_version(void) {
 }
 void openrgb_get_device_info(void) {
     raw_hid_buffer[0] = OPENRGB_GET_DEVICE_INFO;
-
-    uint8_t key_leds = 0;
-    uint8_t underglow_leds = 0;
-    for(int i = 0; i < DRIVER_LED_TOTAL; i++)
-    {
-        if(g_led_config.flags[i] & 2) {
-            underglow_leds++;
-        }
-        else {
-            key_leds++;
-        }
-    }
-
-    raw_hid_buffer[1] = key_leds;
-    raw_hid_buffer[2] = underglow_leds;
+    raw_hid_buffer[1] = DRIVER_LED_TOTAL;
 
 #define MASSDROP_VID 0x04D8
 #if VENDOR_ID == MASSDROP_VID
@@ -224,7 +210,7 @@ void openrgb_get_device_info(void) {
 #    define MANUFACTURER_STRING STR(MANUFACTURER)
 #endif
 
-    uint8_t current_byte = 3;
+    uint8_t current_byte = 2;
     for (uint8_t i = 0; (current_byte < ((RAW_EPSIZE - 2) / 2)) && (PRODUCT_STRING[i] != 0); i++) {
         raw_hid_buffer[current_byte] = PRODUCT_STRING[i];
         current_byte++;
@@ -304,7 +290,7 @@ void openrgb_get_is_mode_enabled(uint8_t *data) {
 void openrgb_get_direct_mode_led_color(uint8_t *data) {
     const uint8_t led = data[1];
 
-    raw_hid_buffer[0] = OPENRGB_DIRECT_MODE_GET_LED_COLOR;
+    raw_hid_buffer[0] = OPENRGB_GET_DIRECT_MODE_LED_COLOR;
 
     if (led >= DRIVER_LED_TOTAL) {
         raw_hid_buffer[1]              = OPENRGB_FAILURE;
