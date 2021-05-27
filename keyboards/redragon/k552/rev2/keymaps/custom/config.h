@@ -37,7 +37,10 @@
 #define MATRIX_ROW_PINS { C15, D11, D10, D9, D8, D7 }
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
-#define DEBOUNCE 5
+#ifdef DEBOUNCE
+#   undef DEBOUNCE
+#endif
+#define DEBOUNCE 10
 
 #define RGB_MATRIX_KEYPRESSES
 // #define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_SOLID_SPLASH
@@ -56,3 +59,5 @@
 
 // #define WS2812_BYTE_ORDER 0
 // #define WS2812_EXTERNAL_PULLUP
+//
+#define FORCE_NKRO
