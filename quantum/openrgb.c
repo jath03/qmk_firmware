@@ -199,7 +199,7 @@ void openrgb_get_protocol_version(void) {
 }
 void openrgb_get_device_info(void) {
     raw_hid_buffer[0] = OPENRGB_GET_DEVICE_INFO;
-    raw_hid_buffer[1] = DRIVER_LED_TOTAL;
+    raw_hid_buffer[1] = MATRIX_COLS * MATRIX_ROWS;
 
 #define MASSDROP_VID 0x04D8
 #if VENDOR_ID == MASSDROP_VID
@@ -239,13 +239,12 @@ void openrgb_get_led_info(uint8_t *data) {
     const uint8_t led = data[1];
 
     if (led >= DRIVER_LED_TOTAL) {
-        raw_hid_buffer[4]              = OPENRGB_FAILURE;
-        return;
+        raw_hid_buffer[RAW_EPSIZE - 2] = OPENRGB_FAILURE;
+    } else {
+        raw_hid_buffer[1] = g_led_config.point[led].x;
+        raw_hid_buffer[2] = g_led_config.point[led].y;
+        raw_hid_buffer[3] = g_led_config.flags[led];
     }
-
-    raw_hid_buffer[1] = g_led_config.point[led].x;
-    raw_hid_buffer[2] = g_led_config.point[led].y;
-    raw_hid_buffer[3] = g_led_config.flags[led];
 
     const uint8_t row = led / MATRIX_COLS;
     const uint8_t col = led % MATRIX_COLS;
