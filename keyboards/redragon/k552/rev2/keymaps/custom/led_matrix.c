@@ -4,6 +4,7 @@
 #include "rgb_matrix_types.h"
 #include "color.h"
 #include "ws2812.c"
+#include "config_led.h"
 
 /*
     COLS key / led
@@ -41,17 +42,28 @@
     GPIO    GND
 */
 
-LED_TYPE led_state[DRIVER_LED_TOTAL- RGBLED_NUM];
+LED_TYPE led_state[LED_MATRIX_ROWS * LED_MATRIX_COLS];
 LED_TYPE new_led_state[DRIVER_LED_TOTAL];
 LED_TYPE rgb_matrix_ws2812_array[RGBLED_NUM];
+uint8_t led_pos[DRIVER_LED_TOTAL];
 extern volatile int strip;
 
-void init(void) {}
+void init(void) {
+    unsigned int i = 0;
+    for (unsigned int y = 0; y < LED_MATRIX_ROWS; y++) {
+        for (unsigned int x = 0; x < LED_MATRIX_COLS; x++) {
+            if (g_led_config.matrix_co[y][x] != NO_LED) {
+                led_pos[g_led_config.matrix_co[y][x]] = i;
+            }
+            i++;
+        }
+    }
+}
 bool ws_changed = false;
 static void flush(void) {
 
     for (int i=0; i<DRIVER_LED_TOTAL; i++) {
-        if (i > 101) {
+        if (i > 86) {
             convert_rgb_to_rgbw(&new_led_state[i]);
             if (rgb_matrix_ws2812_array[DRIVER_LED_TOTAL - i - 1].r != new_led_state[i].r
                 || rgb_matrix_ws2812_array[DRIVER_LED_TOTAL - i - 1].g != new_led_state[i].g
@@ -62,7 +74,7 @@ static void flush(void) {
                 ws_changed = true;
             }
         } else {
-            led_state[i] = new_led_state[i];
+            led_state[led_pos[i]] = new_led_state[i];
         }
     }
     if (strip == 0 || ws_changed) {

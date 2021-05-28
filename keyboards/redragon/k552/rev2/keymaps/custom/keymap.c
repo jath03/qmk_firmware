@@ -77,14 +77,14 @@ bool led_update_user(led_t led_state) {
 }
 
 void rgb_matrix_set_strip(uint8_t red, uint8_t green, uint8_t blue) {
-    rgb_matrix_set_color(102, red, green, blue);
-    rgb_matrix_set_color(103, red, green, blue);
-    rgb_matrix_set_color(104, red, green, blue);
-    rgb_matrix_set_color(105, red, green, blue);
-    rgb_matrix_set_color(106, red, green, blue);
-    rgb_matrix_set_color(107, red, green, blue);
-    rgb_matrix_set_color(108, red, green, blue);
-    rgb_matrix_set_color(109, red, green, blue);
+    rgb_matrix_set_color(87, red, green, blue);
+    rgb_matrix_set_color(88, red, green, blue);
+    rgb_matrix_set_color(89, red, green, blue);
+    rgb_matrix_set_color(90, red, green, blue);
+    rgb_matrix_set_color(91, red, green, blue);
+    rgb_matrix_set_color(92, red, green, blue);
+    rgb_matrix_set_color(93, red, green, blue);
+    rgb_matrix_set_color(94, red, green, blue);
 }
 
 void rgb_matrix_indicators_user(void) {
