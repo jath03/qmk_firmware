@@ -93,8 +93,8 @@ void rgb_matrix_indicators_user(void) {
     h.s = UINT8_MAX;
     RGB color = hsv_to_rgb(h);
     if (inc_matrix_mode && strip != 1) {
-        if (caps) rgb_matrix_set_color(51, color.r, color.g, color.b);
-        else rgb_matrix_set_color(51, 0, 0, 0);
+        if (caps) rgb_matrix_set_color(50, color.r, color.g, color.b);
+        else rgb_matrix_set_color(50, 0, 0, 0);
     }
     switch (strip) {
         case 0:
