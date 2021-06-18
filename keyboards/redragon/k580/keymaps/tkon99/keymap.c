@@ -41,7 +41,8 @@ enum {
   U_G4,
   U_G5,
   U_REC,
-  U_VOLBRI // Volume/Brightness toggle
+  U_VOLBRI, // Volume/Brightness toggle
+  U_SDLED // Side LED toggle
 };
 bool BRI = false; // Keep track of volume/brightness for the encoder
 
@@ -54,14 +55,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 {   KC_LSFT,    KC_NO,      KC_Z,       KC_X,    KC_C,       KC_V,    KC_B,    KC_N,       KC_M,       KC_COMM,    KC_DOT,     KC_SLSH,    KC_NO,      KC_RSFT,    U_G2,       KC_UP,      U_G1,       KC_P1,      KC_P2,      KC_P3,      KC_PENT },
                 {   KC_LCTL,    KC_LGUI,    KC_LALT,    KC_SPC,  KC_RALT,    MO(_FN), KC_APP,  KC_B,       KC_RCTL,    KC_NO,      KC_NO,      KC_NO,      KC_NO,      KC_NO,      KC_LEFT,    KC_DOWN,    KC_RIGHT,   KC_H,       KC_P0,      KC_PDOT,    KC_MPLY }
               },
-    [_FN]   = { {   RESET,      KC_MSEL,    KC_VOLD,    KC_VOLU, KC_MUTE,    KC_MSTP, KC_MPRV, KC_MPLY,    KC_MNXT,    KC_MAIL,    KC_WHOM,    KC_CALC,    RGB_TOG,    _______,    _______,    _______,    KC_SLEP,    _______,    _______,    _______,    _______ },
-                {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    RGB_SPD,    RGB_SPI,    _______,    RGB_M_P,    RGB_M_B,    RGB_M_R,    _______,    _______,    _______,    _______ },
-                {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    _______,    _______,    _______,    RGB_M_SW,   _______,    _______,    _______,    _______,    _______,    _______ },
+    [_FN]   = { {   RESET,      KC_MSEL,    KC_VOLD,    KC_VOLU, KC_MUTE,    KC_MSTP, KC_MPRV, KC_MPLY,    KC_MNXT,    KC_MAIL,    KC_WHOM,    KC_CALC,    U_SDLED,    _______,    _______,    _______,    KC_SLEP,    _______,    _______,    _______,    _______ },
+                {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______ },
+                {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______ },
                 {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______ },
                 {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    RGB_VAI,    _______,    KC_BRIU,    KC_BRID,    _______,    _______ },
-                {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    _______,    _______,    _______,    RGB_HUD,    RGB_VAD,    RGB_HUI,    _______,    _______,    _______,    _______ }
+                {   _______,    _______,    _______,    _______, _______,    _______, _______, _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,    RGB_VAD,    _______,    _______,    _______,    _______,    _______ }
              }
 };
+
 
 /* Macro LED support
                     {G1, G2, G3, G4, G5, REC} */
@@ -94,6 +96,49 @@ void macro_led_clear(void) {
     }
     set_macro_leds(macro_state);
 }
+
+/* Side LED support
+                        Left - Top to bottom         Right - Top to bottom */
+int side_leds[2][7] = {{13,112,114,115,116,117,118},{17,18,19,20,79,100,98}};
+
+//colors      hsv
+#define Red    {0,255,255}
+#define Orange {28,255,255}
+#define Yellow {43,255,255}
+#define Green  {85,255,255}
+#define Blue   {170,255,255}
+#define Violet {193,255,255}
+#define Sakura {242,171,255}
+#define White  {0,0,255}
+#define ______ {0,0,0}       //no color
+int side_led_colors[][3] = {______, Red, Orange, Yellow, Green, Blue, Violet, Sakura, White};
+uint8_t side_led_colors_length = sizeof(side_led_colors)/sizeof(side_led_colors[0]);
+uint8_t side_led_current_index = 0;
+
+void side_led_set_color(int i, int color[]){
+    HSV hsv = {
+      .h = pgm_read_byte(&color[0]),
+      .s = pgm_read_byte(&color[1]),
+      .v = pgm_read_byte(&color[2]),
+    };
+    if (!hsv.h && !hsv.s && !hsv.v) {
+        rgb_matrix_set_color(i, 0, 0, 0);
+    } else{
+        RGB rgb = hsv_to_rgb( hsv );
+        float f = (float)rgb_matrix_config.hsv.v / UINT8_MAX;
+        rgb_matrix_set_color( i, f * rgb.r, f * rgb.g, f * rgb.b );
+    }
+}
+
+void side_led_switch(void) {
+    side_led_current_index = (side_led_current_index + 1) % (side_led_colors_length - 1);
+    for (int i = 0; i < 2; i++){
+        for (int j = 0; j < 7; j++){
+            side_led_set_color(side_leds[i][j],side_led_colors[side_led_current_index]);
+        }
+    }
+}
+
 
 // Macro support (for default keymap)
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -136,6 +181,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             macro_led_toggle(5);
         }
         break;
+    case U_SDLED:
+        if (record->event.pressed) {
+            side_led_switch();
+        }
+        break;
     }
     return true;
 };
@@ -157,4 +207,10 @@ void encoder_update_user(uint8_t index, bool clockwise) {
             }
         }
     }
+}
+
+// Customize Keyboard - tkon99
+void keyboard_post_init_user(void) {
+    //rgb_matrix_set_color_all(255,255,255);
+    rgb_matrix_sethsv_noeeprom(0, 0, 200);
 }
