@@ -54,6 +54,14 @@ void init(void) {
             i++;
         }
     }
+#ifdef UNDERGLOW_IDX
+    i = 0;
+    static const unsigned int underglow_led_idx[UNDERGLOW_LEDS] = UNDERGLOW_IDX;
+    for (unsigned int x = DRIVER_LED_TOTAL - UNDERGLOW_LEDS; x < DRIVER_LED_TOTAL; x++) {
+        led_pos[x] = underglow_led_idx[i];
+        i++;
+    }
+#endif
 }
 
 static void flush(void) {}
