@@ -42,6 +42,9 @@
 
 LED_TYPE led_state[LED_MATRIX_ROWS * LED_MATRIX_COLS];
 uint8_t led_pos[DRIVER_LED_TOTAL];
+#ifdef UNDERGLOW_IDX
+static const unsigned int underglow_led_idx[UNDERGLOW_LEDS] = UNDERGLOW_IDX;
+#endif
 
 
 void init(void) {
@@ -56,7 +59,6 @@ void init(void) {
     }
 #ifdef UNDERGLOW_IDX
     i = 0;
-    static const unsigned int underglow_led_idx[UNDERGLOW_LEDS] = UNDERGLOW_IDX;
     for (unsigned int x = DRIVER_LED_TOTAL - UNDERGLOW_LEDS; x < DRIVER_LED_TOTAL; x++) {
         led_pos[x] = underglow_led_idx[i];
         i++;
@@ -68,6 +70,14 @@ static void flush(void) {}
 
 void set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
     int corrected_index = led_pos[index];
+    for (unsigned int i = 0; i < UNDERGLOW_LEDS; i++) {
+        if (corrected_index == underglow_led_idx[i]) {
+            led_state[corrected_index].r = r;
+            led_state[corrected_index].g = b;
+            led_state[corrected_index].b = g;
+            return;
+        }
+    }
     led_state[corrected_index].r = r;
     led_state[corrected_index].g = g;
     led_state[corrected_index].b = b;
