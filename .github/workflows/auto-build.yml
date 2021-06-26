@@ -2,12 +2,7 @@ name: Compile Firmware
 
 on:
   push:
-    branches:
-    - '**'
   pull_request:
-    branches:
-    - sn32
-    - sn32_openrgb
 
 jobs:
   Build:
