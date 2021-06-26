@@ -92,7 +92,7 @@ void led_set(uint8_t usb_led) {
     }
 }
 */
-
+// Why won't the auto-build run?
 bool led_update_kb(led_t led_state) {
     bool res = led_update_user(led_state);
     if (res && led_state.caps_lock) {
