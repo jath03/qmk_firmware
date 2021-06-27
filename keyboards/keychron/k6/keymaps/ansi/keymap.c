@@ -42,6 +42,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                }
 };
 
+bool caps = false;
+
 void dip_switch_update_user(uint8_t index, bool active){
   switch(index){
     case 0:
@@ -68,4 +70,15 @@ void keyboard_post_init_user(void) {
   //debug_matrix=true;
   //debug_keyboard=true;
   //debug_mouse=true;
+}
+
+bool led_update_user(led_t led_state) {
+    caps = led_state.caps_lock;
+    return false;
+}
+
+void rgb_matrix_indicators_user(void) {
+    if (caps) {
+        rgb_matrix_set_color(20, 255, 0, 0);
+    }
 }
